@@ -1,0 +1,11 @@
+---
+title: "Homework 2"
+author: "Iris (Ziyi) Wang"
+output: github_document
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+```
+
+##Problem 1
