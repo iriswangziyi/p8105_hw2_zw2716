@@ -130,3 +130,84 @@ reformated_nyc_subway_df = pivot_longer(nyc_subway_df,
 
 
 ## Problem 3
+First, clean the data in pols-month.csv.
+
+```{r}
+# month_df = tibble(month = 1:12,month_name = month.name)
+
+pols = read_csv("./fivethirtyeight_datasets/pols-month.csv") %>% 
+    separate(col = mon, 
+             into = c("year", "month", "day"), 
+             sep = "-") %>% 
+    mutate(month = as.integer(month),
+           month = month.name[month],
+           president = prez_gop,
+           president = recode(president, "1" = "gop", "0" = "dem")) %>% 
+    select(-prez_dem, -prez_gop,-day) %>% 
+    arrange(year,month)
+
+
+```
+Second, clean the data in snp.csv.
+
+```{r}
+snp = read_csv("./fivethirtyeight_datasets/snp.csv") %>% 
+    separate(col = date, 
+             into = c("month", "day","year"), 
+             sep = "/") %>% 
+    mutate(month = as.integer(month),
+           month = month.name[month]) %>% 
+    select(-day) %>% 
+    relocate("year", "month") %>% 
+    arrange(year,month)
+```
+
+Third, tidy the unemployment data so that it can be merged with the previous datasets.
+
+```{r}
+month_abb = 
+	tibble(
+		month = month.abb,
+		month_int = 1:12
+	)
+
+unemployment = read_csv("./fivethirtyeight_datasets/unemployment.csv") %>% 
+    pivot_longer(Jan:Dec,
+                 names_to = "month",
+                 values_to = "%unemployment") %>% 
+    left_join(month_abb, by = "month") %>% 
+    mutate(month_int = month.name[month_int],
+           Year = as.character(Year)) %>% 
+    select(-month) %>% 
+    rename(month = month_int,
+           year = Year) %>% 
+    relocate(year, month) %>% 
+    arrange(year,month)
+
+```
+
+Join the datasets by merging snp into pols, and merging unemployment into the result.
+```{r}
+result = left_join(left_join(pols,snp),unemployment)
+```
+
+
+The dataset _**pols**_ has dimension of `r nrow(pols)` x `r ncol(pols)`. It shows the number of national politicians who are democratic or republican at any given time. Then range of years is `r min(range(pull(pols,year)))` - `r max(range(pull(pols,year)))`. The key variables in the _**pols**_ are: `r names(pols)`.
+
+The dataset _**snp**_ has dimension of `r nrow(snp)` x `r ncol(snp)`. It shows the closing values of the S&P stock (Standard & Poor’s) index, which is often used as a representative measure of stock market as a whole. Then range of years is `r min(range(pull(snp,year)))` - `r max(range(pull(snp,year)))`. The key variables in the _**snp**_ are: `r names(snp)`.
+
+The dataset _**unemployment**_ has dimension of `r nrow(unemployment)` x `r ncol(unemployment)`. It shows the percentage of unemployment on the associated date. Then range of years is `r min(range(pull(unemployment,year)))` - `r max(range(pull(unemployment,year)))`. The key variables in the _**unemployment**_ are: `r names(unemployment)`.
+
+The resulting dataset, _**result**_, has dimension  is `r nrow(result)` x `r ncol(result)`. Then range of years is `r min(range(pull(result,year)))` - `r max(range(pull(result,year)))`. The key variables in the _**result**_ are: `r names(result)`.
+
+###### Detailed explanation for each variables: 
+* year: the year of the measurements  
+* month: the month of the measurements  
+* gov_gop: the number of republican governors on the associated date  
+* sen_gop: the number of republican senators on the associated date  
+* rep_gop: the number of republican representatives on the associated date  
+* gov_dem: the number of democratic governors on the associated date  
+* sen_dem: the number of democratic senators on the associated date  
+* rep_dem: the number of democratic representatives on the associated date  
+* close: the closing values of the S&P stock index on the associated date  
+* %unemployment: percentage of unemployment on the associated date  
