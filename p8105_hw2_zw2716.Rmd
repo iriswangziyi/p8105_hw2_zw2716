@@ -4,10 +4,6 @@ author: "Iris (Ziyi) Wang"
 output: github_document
 ---
 
-```{r setup, include = FALSE}
-library(tidyverse)
-```
-
 ```{r setup}
 library(tidyverse)
 library(readxl)
@@ -51,6 +47,7 @@ precip_2018 =
 	drop_na(month) %>% 
 	mutate(year = 2018) %>% 
 	relocate(year)
+
 precip_2017 = 
 	read_excel(
 		"./data/Trash-Wheel-Collection-Totals-7-2020-1.xlsx",
@@ -71,8 +68,10 @@ month_df =
 		month = 1:12,
 		month_name = month.name
 	)
+
 precip_df = 
 	bind_rows(precip_2018, precip_2017)
+
 precip_df =
 	left_join(precip_df, month_df, by = "month")
 ```
