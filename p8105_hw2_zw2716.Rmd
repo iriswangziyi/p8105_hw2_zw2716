@@ -99,23 +99,34 @@ nyc_subway_df = read_csv(path_to_P2_data) %>%
              "Route7", "Route8", "Route9", "Route10", "Route11", 
              "Entrance Type", "Entry", "Vending", "ADA")) %>% 
 	janitor::clean_names() %>% 
-    mutate(entry = recode(entry, "YES" = T, "NO" = F))
-
+    mutate(entry = recode(entry, "YES" = T, "NO" = F),
+           vending = recode(vending, "YES" = T, "NO" = F),
+           across(route1:route11,as.character))
+   
 ```
-explain briefly  describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
-
 The variables in the NYC Transit dataset, called **nyc_subway_df** are: line, station name, station latitude, station longitude, routes served (1-11), entrance type, entry, vending, and ADA (compliance).  
-For my data cleaning step, I have changed all the variables name to be more readable and easy to work with (all lowercased, use "_" instead of " "). I also convert the entry variable from character to a logical variable.   
-The dimension of resulting dataset **nyc_subway_df** is `r nrow(trashwheel_df)` x `r ncol(trashwheel_df)`. The dataset is tidy now.  
+For my data cleaning step, I have changed all the variables name to be more readable and easy to work with (all lowercased, use "_" instead of " "). I also convert the entry and vending variables from character to a logical variable, and convert all routes to be character.
+The dimension of resulting dataset **nyc_subway_df** is `r nrow(nyc_subway_df)` x `r ncol(nyc_subway_df)`.  
+The dataset is not very tidy to me. It will be better to have a "route_number" column along with a "route_name" column instead of route 1 to route 11.
 
 In this dataset:  
-* There are X distinct stations.
-* X stations are ADA compliant.
-* The proportion of station entrances / exits without vending allow entrance is X.
+* There are `r nrow(distinct(nyc_subway_df, station_name,line))` distinct stations.  
+* If considering distinct stations, then `r nrow(distinct(filter(nyc_subway_df,ada==T), station_name,line))` stations are ADA compliant. Otherwise, `r nrow(filter(nyc_subway_df,ada==T))` stations are ADA compliant.  
+* The proportion of station entrances / exits without vending allow entrance is `r nrow(filter(nyc_subway_df,vending == F,entry==T))/nrow(filter(nyc_subway_df,vending == F))`.  
 
-How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
+nrow(distinct(filter(nyc_subway_df,vending==T), station_name,line))
 
-Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+Reformat data so that route number and route name are distinct variables, then only keep the A train subdata. 
+```{r}
+reformated_nyc_subway_df = pivot_longer(nyc_subway_df, 
+                                        route1:route11,
+                                        names_to = "route_name",
+                                        values_to = "route_number") %>% 
+    filter(route_number == "A")
+```
+
+* There are `r nrow(distinct(reformated_nyc_subway_df, station_name,line))` distinct stations serve the A train.
+* `r  nrow(distinct(filter(reformated_nyc_subway_df, ada==T), station_name,line))` of the stations that serve the A train is ADA compliant.
 
 
 ## Problem 3
