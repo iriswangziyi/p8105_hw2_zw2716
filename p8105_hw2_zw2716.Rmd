@@ -90,12 +90,32 @@ path_to_P2_data = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
 ```
 
 
-Read the NYC Transit dataset. 
+Read the NYC Transit dataset, only retain line, station name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance from the dataset.
 
 ```{r}
 nyc_subway_df = read_csv(path_to_P2_data) %>% 
-	janitor::clean_names()
+    select(c("Line", "Station Name", "Station Latitude", "Station Longitude", 
+             "Route1", "Route2", "Route3", "Route4", "Route5", "Route6", 
+             "Route7", "Route8", "Route9", "Route10", "Route11", 
+             "Entrance Type", "Entry", "Vending", "ADA")) %>% 
+	janitor::clean_names() %>% 
+    mutate(entry = recode(entry, "YES" = T, "NO" = F))
+
 ```
+explain briefly  describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
+
+The variables in the NYC Transit dataset, called **nyc_subway_df** are: line, station name, station latitude, station longitude, routes served (1-11), entrance type, entry, vending, and ADA (compliance).  
+For my data cleaning step, I have changed all the variables name to be more readable and easy to work with (all lowercased, use "_" instead of " "). I also convert the entry variable from character to a logical variable.   
+The dimension of resulting dataset **nyc_subway_df** is `r nrow(trashwheel_df)` x `r ncol(trashwheel_df)`. The dataset is tidy now.  
+
+In this dataset:  
+* There are X distinct stations.
+* X stations are ADA compliant.
+* The proportion of station entrances / exits without vending allow entrance is X.
+
+How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
+
+Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
 
 
 ## Problem 3
